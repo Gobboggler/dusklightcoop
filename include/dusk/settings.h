@@ -264,6 +264,8 @@ struct UserSettings {
         ConfigVar<bool> checkForUpdates;
         ConfigVar<int> cardFileType;
         ConfigVar<bool> enableAdvancedSettings;
+        ConfigVar<int> splitScreenPlayerCount;
+        ConfigVar<int> splitScreenLayout;
 
         // Multiplayer
         ConfigVar<std::string> serverIp;

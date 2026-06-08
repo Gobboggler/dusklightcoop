@@ -1447,6 +1447,8 @@ set(DUSK_FILES
         include/dusk/network.hpp
         include/dusk/tp_online.hpp
         include/dusk/multiplayer.hpp
+        include/dusk/splitscreen.hpp
+        src/dusk/splitscreen.cpp
         src/dusk/texture_replacements.cpp
         src/dusk/update_check.cpp
         src/dusk/update_check.hpp

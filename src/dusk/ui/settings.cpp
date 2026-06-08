@@ -1603,6 +1603,89 @@ SettingsWindow::SettingsWindow(bool prelaunch) : mPrelaunch(prelaunch) {
                 pane.add_text("Path to the server JAR file for auto-launch.");
             });
     });
+
+    add_tab("Splitscreen", [this](Rml::Element* content) {
+        auto& leftPane = add_child<Pane>(content, Pane::Type::Controlled);
+        auto& rightPane = add_child<Pane>(content, Pane::Type::Uncontrolled);
+
+        leftPane.add_section("Local Multiplayer");
+
+        config_bool_select(leftPane, rightPane, getSettings().backend.enabled,
+            {
+                .key = "Enable Splitscreen",
+                .helpText = "Enables split-screen local multiplayer.",
+            });
+
+        leftPane.register_control(
+            leftPane.add_child<NumberButton>(NumberButton::Props{
+                .key = "Player Count",
+                .getValue = [] { return getSettings().backend.splitScreenPlayerCount.getValue(); },
+                .setValue = [](int value) {
+                    getSettings().backend.splitScreenPlayerCount.setValue(value);
+                    config::Save();
+                },
+                .min = 2,
+                .max = 4,
+            }),
+            rightPane, [](Pane& pane) {
+                pane.clear();
+                pane.add_text("Number of local players (2-4).");
+            });
+
+        leftPane.register_control(
+            leftPane.add_select_button({
+                .key = "Layout",
+                .getValue = [] {
+                    int v = getSettings().backend.splitScreenLayout.getValue();
+                    switch (v) {
+                        case 0: return "Horizontal";
+                        case 1: return "Vertical";
+                        case 2: return "Quad";
+                        default: return "Horizontal";
+                    }
+                },
+                .isModified = [] {
+                    return getSettings().backend.splitScreenLayout.getValue() !=
+                           getSettings().backend.splitScreenLayout.getDefaultValue();
+                },
+            }),
+            rightPane, [](Pane& pane) {
+                pane.clear();
+                pane
+                    .add_button({
+                        .text = "Horizontal",
+                        .isSelected = [] {
+                            return getSettings().backend.splitScreenLayout.getValue() == 0;
+                        },
+                    })
+                    .on_pressed([] {
+                        getSettings().backend.splitScreenLayout.setValue(0);
+                        config::Save();
+                    });
+                pane
+                    .add_button({
+                        .text = "Vertical",
+                        .isSelected = [] {
+                            return getSettings().backend.splitScreenLayout.getValue() == 1;
+                        },
+                    })
+                    .on_pressed([] {
+                        getSettings().backend.splitScreenLayout.setValue(1);
+                        config::Save();
+                    });
+                pane
+                    .add_button({
+                        .text = "Quad",
+                        .isSelected = [] {
+                            return getSettings().backend.splitScreenLayout.getValue() == 2;
+                        },
+                    })
+                    .on_pressed([] {
+                        getSettings().backend.splitScreenLayout.setValue(2);
+                        config::Save();
+                    });
+            });
+    });
 }
 
 void SettingsWindow::update() {
