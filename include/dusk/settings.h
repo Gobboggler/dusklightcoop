@@ -264,6 +264,17 @@ struct UserSettings {
         ConfigVar<bool> checkForUpdates;
         ConfigVar<int> cardFileType;
         ConfigVar<bool> enableAdvancedSettings;
+
+        // Multiplayer
+        ConfigVar<std::string> serverIp;
+        ConfigVar<int> serverPort;
+        ConfigVar<std::string> userName;
+        ConfigVar<int> playerColor;
+        ConfigVar<int> wolfColor;
+        ConfigVar<int> joinType;
+        ConfigVar<bool> enabled;
+        ConfigVar<bool> autoLaunchServer;
+        ConfigVar<std::string> serverJarPath;
     } backend;
 
     // Arrays of size 4 for 4 ports

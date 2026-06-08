@@ -5,6 +5,7 @@
 #include "dusk/file_select.hpp"
 #include "dusk/iso_validate.hpp"
 #include "dusk/main.h"
+#include "dusk/multiplayer.hpp"
 #include "dusk/settings.h"
 #include "dusk/update_check.hpp"
 #include "modal.hpp"
@@ -726,9 +727,25 @@ Prelaunch::Prelaunch() : Document(kDocumentSource), mRoot(mDocument->GetElementB
         });
         apply_intro_animation(mMenuButtons.back()->root(), "delay-2");
 
+        mMenuButtons.push_back(std::make_unique<Button>(menuList, "Play Online"));
+        mMenuButtons.back()->on_pressed([] {
+            const auto& ip = getSettings().backend.serverIp.getValue();
+            int port = getSettings().backend.serverPort.getValue();
+            const auto& name = getSettings().backend.userName.getValue();
+            int joinType = getSettings().backend.joinType.getValue();
+
+            multiplayer::set_pending_connection(
+                ip, static_cast<uint16_t>(port), name,
+                static_cast<multiplayer::JoinType>(joinType));
+
+            IsGameLaunched = true;
+            hide(true);
+        });
+        apply_intro_animation(mMenuButtons.back()->root(), "delay-3");
+
         mMenuButtons.push_back(std::make_unique<Button>(menuList, "Quit"));
         mMenuButtons.back()->on_pressed([] { IsRunning = false; });
-        apply_intro_animation(mMenuButtons.back()->root(), "delay-3");
+        apply_intro_animation(mMenuButtons.back()->root(), "delay-4");
     }
 
     mDiscStatus = mDocument->GetElementById("disc-status");

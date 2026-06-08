@@ -1444,6 +1444,9 @@ set(DUSK_FILES
         src/dusk/string.cpp
         src/dusk/stubs.cpp
         include/dusk/texture_replacements.hpp
+        include/dusk/network.hpp
+        include/dusk/tp_online.hpp
+        include/dusk/multiplayer.hpp
         src/dusk/texture_replacements.cpp
         src/dusk/update_check.cpp
         src/dusk/update_check.hpp
@@ -1530,6 +1533,9 @@ set(DUSK_FILES
         src/dusk/discord_presence.cpp
         src/dusk/version.cpp
         src/dusk/action_bindings.cpp
+        src/dusk/network.cpp
+        src/dusk/tp_online.cpp
+        src/dusk/multiplayer.cpp
 )
 
 set(DUSK_HTTP_BACKEND_FILES

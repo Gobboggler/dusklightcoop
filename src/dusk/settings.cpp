@@ -157,6 +157,17 @@ UserSettings g_userSettings = {
         .checkForUpdates {"backend.checkForUpdates", true},
         .cardFileType {"backend.cardFileType", static_cast<int>(CARD_GCIFOLDER)},
         .enableAdvancedSettings {"backend.enableAdvancedSettings", false},
+
+        // Multiplayer
+        .serverIp {"backend.serverIp", "127.0.0.1"},
+        .serverPort {"backend.serverPort", 4216},
+        .userName {"backend.userName", "Player"},
+        .playerColor {"backend.playerColor", 0},
+        .wolfColor {"backend.wolfColor", 0},
+        .joinType {"backend.joinType", 0},
+        .enabled {"backend.enabled", false},
+        .autoLaunchServer {"backend.autoLaunchServer", false},
+        .serverJarPath {"backend.serverJarPath", ""},
     },
 
     // Not sure if there's a better way to declare this
@@ -322,6 +333,15 @@ void registerSettings() {
     Register(g_userSettings.backend.checkForUpdates);
     Register(g_userSettings.backend.cardFileType);
     Register(g_userSettings.backend.enableAdvancedSettings);
+    Register(g_userSettings.backend.serverIp);
+    Register(g_userSettings.backend.serverPort);
+    Register(g_userSettings.backend.userName);
+    Register(g_userSettings.backend.playerColor);
+    Register(g_userSettings.backend.wolfColor);
+    Register(g_userSettings.backend.joinType);
+    Register(g_userSettings.backend.enabled);
+    Register(g_userSettings.backend.autoLaunchServer);
+    Register(g_userSettings.backend.serverJarPath);
 
     Register(g_userSettings.actionBindings.firstPersonCamera[0]);
     Register(g_userSettings.actionBindings.firstPersonCamera[1]);

@@ -9,6 +9,7 @@
 #include "dusk/config.hpp"
 #include "dusk/hotkeys.h"
 #include "dusk/data.hpp"
+#include "dusk/multiplayer.hpp"
 #include "dusk/file_select.hpp"
 #include "dusk/imgui/ImGuiEngine.hpp"
 #include "dusk/io.hpp"
@@ -1485,6 +1486,122 @@ SettingsWindow::SettingsWindow(bool prelaunch) : mPrelaunch(prelaunch) {
         add_speedrun_disabled_option(leftPane, rightPane, getSettings().game.recordingMode,
             "Recording Mode",
             "Disables the game HUD and all background music.<br/><br/>Useful for recording footage.");
+    });
+
+    add_tab("Multiplayer", [this](Rml::Element* content) {
+        auto& leftPane = add_child<Pane>(content, Pane::Type::Controlled);
+        auto& rightPane = add_child<Pane>(content, Pane::Type::Uncontrolled);
+
+        leftPane.add_section("Connection");
+
+        leftPane.register_control(
+            leftPane.add_child<StringButton>(StringButton::Props{
+                .key = "Server IP",
+                .getValue = [] { return getSettings().backend.serverIp.getValue(); },
+                .setValue = [](Rml::String value) {
+                    getSettings().backend.serverIp.setValue(std::move(value));
+                    config::Save();
+                },
+            }),
+            rightPane, [](Pane& pane) {
+                pane.clear();
+                pane.add_text("The IP address of the multiplayer server.");
+            });
+
+        leftPane.register_control(
+            leftPane.add_child<NumberButton>(NumberButton::Props{
+                .key = "Server Port",
+                .getValue = [] { return getSettings().backend.serverPort.getValue(); },
+                .setValue = [](int value) {
+                    getSettings().backend.serverPort.setValue(value);
+                    config::Save();
+                },
+                .min = 1,
+                .max = 65535,
+            }),
+            rightPane, [](Pane& pane) {
+                pane.clear();
+                pane.add_text("The port of the multiplayer server.");
+            });
+
+        leftPane.register_control(
+            leftPane.add_child<StringButton>(StringButton::Props{
+                .key = "Username",
+                .getValue = [] { return getSettings().backend.userName.getValue(); },
+                .setValue = [](Rml::String value) {
+                    getSettings().backend.userName.setValue(std::move(value));
+                    config::Save();
+                },
+                .maxLength = 16,
+            }),
+            rightPane, [](Pane& pane) {
+                pane.clear();
+                pane.add_text("Your display name in multiplayer.");
+            });
+
+        leftPane.add_section("Lobby");
+
+        leftPane.register_control(
+            leftPane.add_select_button({
+                .key = "Join Type",
+                .getValue = [] {
+                    int v = getSettings().backend.joinType.getValue();
+                    return v == 0 ? "Host" : "Join";
+                },
+                .isModified = [] {
+                    return getSettings().backend.joinType.getValue() !=
+                           getSettings().backend.joinType.getDefaultValue();
+                },
+            }),
+            rightPane, [](Pane& pane) {
+                pane.clear();
+                pane
+                    .add_button({
+                        .text = "Host",
+                        .isSelected = [] {
+                            return getSettings().backend.joinType.getValue() == 0;
+                        },
+                    })
+                    .on_pressed([] {
+                        mDoAud_seStartMenu(kSoundItemChange);
+                        getSettings().backend.joinType.setValue(0);
+                        config::Save();
+                    });
+                pane
+                    .add_button({
+                        .text = "Join",
+                        .isSelected = [] {
+                            return getSettings().backend.joinType.getValue() == 1;
+                        },
+                    })
+                    .on_pressed([] {
+                        mDoAud_seStartMenu(kSoundItemChange);
+                        getSettings().backend.joinType.setValue(1);
+                        config::Save();
+                    });
+            });
+
+        leftPane.add_section("Server");
+
+        config_bool_select(leftPane, rightPane, getSettings().backend.autoLaunchServer,
+            {
+                .key = "Auto-Launch Server",
+                .helpText = "Automatically launches the server JAR when hosting a game.",
+            });
+
+        leftPane.register_control(
+            leftPane.add_child<StringButton>(StringButton::Props{
+                .key = "Server JAR Path",
+                .getValue = [] { return getSettings().backend.serverJarPath.getValue(); },
+                .setValue = [](Rml::String value) {
+                    getSettings().backend.serverJarPath.setValue(std::move(value));
+                    config::Save();
+                },
+            }),
+            rightPane, [](Pane& pane) {
+                pane.clear();
+                pane.add_text("Path to the server JAR file for auto-launch.");
+            });
     });
 }
 

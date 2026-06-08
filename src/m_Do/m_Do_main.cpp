@@ -61,6 +61,7 @@
 #include "dusk/iso_validate.hpp"
 #include "dusk/logging.h"
 #include "dusk/main.h"
+#include "dusk/multiplayer.hpp"
 #include "dusk/ui/menu_bar.hpp"
 #include "dusk/ui/overlay.hpp"
 #include "dusk/ui/prelaunch.hpp"
@@ -772,9 +773,15 @@ int game_main(int argc, char* argv[]) {
 
     OSReport("Starting main01 (Game Loop)...\n");
 
+    dusk::multiplayer::initialize();
+
+    if (dusk::multiplayer::has_pending_connection()) {
+        dusk::multiplayer::connect_online();
+    }
 
     main01();
 
+    dusk::multiplayer::shutdown();
     dusk::MoviePlayerShutdown();
 
     dusk::crash_reporting::shutdown();
