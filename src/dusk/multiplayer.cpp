@@ -64,9 +64,9 @@ bool connect_online()
 {
     if (!g_pending_connection) return false;
 
-    bool auto_launch = settings::Get(settings::Setting::Multiplayer_AutoLaunchServer).value_int != 0;
+    bool auto_launch = getSettings().backend.autoLaunchServer.getValue();
     if (auto_launch && g_pending_join_type == JoinType::Host) {
-        std::string jar_path = settings::Get(settings::Setting::Multiplayer_ServerJarPath).value_string;
+        std::string jar_path = getSettings().backend.serverJarPath.getValue();
         if (!jar_path.empty()) {
             launch_server(jar_path);
         }
@@ -89,10 +89,8 @@ bool connect_online()
 
     tp_online::LoginPacket login;
     login.username = g_pending_username;
-    login.player_color = static_cast<uint8_t>(
-        settings::Get(settings::Setting::Multiplayer_PlayerColor).value_int);
-    login.wolf_color = static_cast<uint8_t>(
-        settings::Get(settings::Setting::Multiplayer_WolfColor).value_int);
+    login.player_color = static_cast<uint8_t>(getSettings().backend.playerColor.getValue());
+    login.wolf_color = static_cast<uint8_t>(getSettings().backend.wolfColor.getValue());
 
     tp_online::Packet pkt;
     pkt.type = tp_online::PacketType::Login;

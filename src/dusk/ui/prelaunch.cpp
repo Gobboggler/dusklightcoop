@@ -728,7 +728,7 @@ Prelaunch::Prelaunch() : Document(kDocumentSource), mRoot(mDocument->GetElementB
         apply_intro_animation(mMenuButtons.back()->root(), "delay-2");
 
         mMenuButtons.push_back(std::make_unique<Button>(menuList, "Play Online"));
-        mMenuButtons.back()->on_pressed([] {
+        mMenuButtons.back()->on_pressed([this] {
             const auto& ip = getSettings().backend.serverIp.getValue();
             int port = getSettings().backend.serverPort.getValue();
             const auto& name = getSettings().backend.userName.getValue();
