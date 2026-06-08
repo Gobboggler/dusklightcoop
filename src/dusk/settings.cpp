@@ -167,7 +167,7 @@ UserSettings g_userSettings = {
         .joinType {"backend.joinType", 0},
         .enabled {"backend.enabled", false},
         .autoLaunchServer {"backend.autoLaunchServer", false},
-        .serverJarPath {"backend.serverJarPath", ""},
+        .serverJarPath {"backend.serverJarPath", "TPOnline_extracted/server.jar"},
     },
 
     // Not sure if there's a better way to declare this
