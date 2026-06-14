@@ -4942,20 +4942,13 @@ int daAlink_c::create() {
         if (coopPlayerIdx == 0) {
             dComIfGp_setLinkPlayer(this);
         } else {
-            // Co-op players: set initial HP/stats from main player
-            daAlink_c* mainPlayer = (daAlink_c*)dComIfGp_getPlayer(0);
-            if (mainPlayer) {
-                mHealth = mainPlayer->mHealth;
-                mMaxHealth = mainPlayer->mMaxHealth;
-                mMagic = mainPlayer->mMagic;
-            }
             // Apply per-player tunic color
             if (coopPlayerIdx < 4) {
                 static const J3DGXColorS10 s_tunicColors[4] = {
-                    {  0,   0,   0, 0},  // 0: default (green from model)
-                    {200, -80, -80, 0},  // 1: red shift
-                    {-80, -80, 200, 0},  // 2: blue shift
-                    {150, 150, -80, 0},  // 3: yellow shift
+                    J3DGXColorS10(GXColorS10{  0,   0,   0, 0}),  // 0: default (green from model)
+                    J3DGXColorS10(GXColorS10{200, -80, -80, 0}),  // 1: red shift
+                    J3DGXColorS10(GXColorS10{-80, -80, 200, 0}),  // 2: blue shift
+                    J3DGXColorS10(GXColorS10{150, 150, -80, 0}),  // 3: yellow shift
                 };
                 int colorIdx = dusk::getSettings().backend.tunicColor[coopPlayerIdx].getValue();
                 if (colorIdx < 0) colorIdx = 0;
