@@ -32,7 +32,7 @@ static void applyCursorTint(dAttDraw_c& d, const J3DGXColor& tint) {
             J3DMaterial* mat = md->getMaterialNodePointer(m);
             J3DGXColorS10 tc(GXColorS10{(s16)tint.r, (s16)tint.g, (s16)tint.b, (s16)tint.a});
             mat->setTevColor(0, &tc);
-            mat->setTevKColor(0, tint);
+            mat->setTevKColor(0, &tint);
         }
     }
 }
