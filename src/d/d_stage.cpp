@@ -22,7 +22,9 @@
 #include <cstdio>
 #include <cstring>
 
+#include "dusk/coop.hpp"
 #include "dusk/logging.h"
+#include "dusk/settings.h"
 #include "dusk/string.hpp"
 #if TARGET_PC
 #include <format>
@@ -1737,6 +1739,26 @@ static int dStage_cameraInit(dStage_dt_c* i_stage, void* i_data, int param_2, vo
     i_stage->setCamera(camera);
     stage_camera2_data_class* camera2 = &camera->m_entries[r30];
     dStage_cameraCreate(camera2, 0, 0);
+
+#if TARGET_PC
+    // Spawn co-op player actors FIRST so their cameras can find them
+    dusk::spawnCoopPlayers();
+
+    // Create additional cameras for splitscreen co-op
+    int coopCount = dusk::getSettings().backend.enabled.getValue()
+        ? dusk::getSettings().backend.splitScreenPlayerCount.getValue() : 1;
+    for (int i = 1; i < 4 && i < coopCount; i++) {
+        fopCamM_prm_class* params = (fopCamM_prm_class*)cMl::memalignB(-4, sizeof(fopCamM_prm_class));
+        if (params != NULL) {
+            params->base.position.x = 0.0f;
+            params->base.position.y = 0.0f;
+            params->base.position.z = 0.0f;
+            params->base.parameters = i;
+            fopCamM_Create(i, fpcNm_CAMERA2_e, params);
+        }
+    }
+#endif
+
     return 1;
 }
 

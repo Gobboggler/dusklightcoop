@@ -679,8 +679,9 @@ static int dScnPly_Draw(dScnPly_c* i_this) {
         dPath_Draw();
         #endif
 
-        dAttention_c* attention = dComIfGp_getAttention();
-        attention->Draw();
+        for (int i = 0; i < 4; i++) {
+            dComIfGp_getAttention(i)->Draw();
+        }
     }
 
     #if DEBUG
@@ -816,7 +817,9 @@ static int dScnPly_Execute(dScnPly_c* i_this) {
         #endif
 
         dComIfGp_getEvent()->Step();
-        dComIfGp_getAttention()->Run();
+        for (int i = 0; i < 4; i++) {
+            dComIfGp_getAttention(i)->Run();
+        }
     }
 
     #if DEBUG
@@ -852,8 +855,10 @@ static int dScnPly_Delete(dScnPly_c* i_this) {
     dMpath_c::remove();
     dTres_c::remove();
 
-    dAttention_c* attention = dComIfGp_getAttention();
-    attention->~dAttention_c();
+    for (int i = 0; i < 4; i++) {
+        dAttention_c* attention = dComIfGp_getAttention(i);
+        attention->~dAttention_c();
+    }
     dComIfGp_getVibration().Remove();
 
     dComIfG_Bgsp().Dt();
@@ -1348,6 +1353,9 @@ static int phase_1_0(dScnPly_c* i_this) {
         dStage_infoCreate();
         dComIfG_setObjectRes("Event", (u8)0, NULL);
         dComIfGp_setCameraParamFileName(0, camparamarc);
+        for (int camSlot = 1; camSlot < 4; camSlot++) {
+            dComIfGp_setCameraParamFileName(camSlot, camparamarc);
+        }
         dComIfG_setObjectRes("CamParam", (u8)0, NULL);
         return cPhs_NEXT_e;
     }
@@ -1442,13 +1450,22 @@ static int phase_4(dScnPly_c* i_this) {
     dJprev_c::create((JStudio::TControl*)dDemo_c::getControl(), *mDoCPd_c::getGamePad(PAD_4));
     #endif
 
-    dComIfGp_setPlayerInfo(0, NULL, 0);
+    for (int i = 0; i < 4; i++) {
+        dComIfGp_setPlayerInfo(i, NULL, i);
+    }
     for (int i = 0; i < 2; i++) {
         dComIfGp_setPlayerPtr(i, NULL);
     }
 
     dComIfGp_setWindow(0, 0.0f, 0.0f, FB_WIDTH, FB_HEIGHT, 0.0f, 1.0f, 0, 2);
-    dComIfGp_setCameraInfo(0, NULL, 0, 0, -1);
+    dComIfGp_setCameraInfo(0, NULL, 0, 0, 0);
+    // Set up windows/cameras for players 2-4 (co-op)
+    dComIfGp_setWindow(1, 0.0f, 0.0f, FB_WIDTH, FB_HEIGHT, 0.0f, 1.0f, 1, 2);
+    dComIfGp_setCameraInfo(1, NULL, 0, 1, 1);
+    dComIfGp_setWindow(2, 0.0f, 0.0f, FB_WIDTH, FB_HEIGHT, 0.0f, 1.0f, 2, 2);
+    dComIfGp_setCameraInfo(2, NULL, 0, 2, 2);
+    dComIfGp_setWindow(3, 0.0f, 0.0f, FB_WIDTH, FB_HEIGHT, 0.0f, 1.0f, 3, 2);
+    dComIfGp_setCameraInfo(3, NULL, 0, 3, 3);
     dComIfGd_setWindow(NULL);
     dComIfGd_setViewport(NULL);
     dComIfGd_setView(NULL);
@@ -1500,8 +1517,10 @@ static int phase_4(dScnPly_c* i_this) {
     daObj::HioObj_c::init();
     #endif
 
-    dAttention_c* attention = dComIfGp_getAttention();
-    JKR_NEW_ARGS (attention) dAttention_c(dComIfGp_getPlayer(0), 0);
+    for (int i = 0; i < 4; i++) {
+        dAttention_c* attention = dComIfGp_getAttention(i);
+        JKR_NEW_ARGS (attention) dAttention_c(dComIfGp_getPlayer(i), PAD_1 + i);
+    }
     dComIfGp_getVibration().Init();
     daYkgr_c::init();
 

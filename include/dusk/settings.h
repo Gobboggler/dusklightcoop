@@ -277,6 +277,7 @@ struct UserSettings {
         ConfigVar<bool> enabled;
         ConfigVar<bool> autoLaunchServer;
         ConfigVar<std::string> serverJarPath;
+        std::array<ConfigVar<int>, 4> tunicColor;
     } backend;
 
     // Arrays of size 4 for 4 ports

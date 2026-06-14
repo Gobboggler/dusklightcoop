@@ -66,6 +66,16 @@ static int daAlink_Execute(daAlink_c* i_this);
 static int daAlink_Draw(daAlink_c* i_this);
 static fopAc_ac_c* daAlink_searchTagKandelaar(fopAc_ac_c* i_actor, void* i_data);
 
+// Get the PAD number for this Link actor's assigned player.
+// Main player (0) uses PAD_1, co-op players use PAD_2-4.
+static int getPlayerPad(const daAlink_c* actor) {
+    u32 params = fopAcM_GetParam(actor);
+    if (params & (1 << 8)) {
+        return PAD_1 + (params & 0xFF);
+    }
+    return PAD_1;
+}
+
 BOOL daAlink_c::getE3Zhint() {
     return false;
 }
@@ -4887,6 +4897,13 @@ int daAlink_c::setStartProcInit() {
 int daAlink_c::create() {
     fopAcM_ct(this, daAlink_c);
 
+    // Check for coop player: bit 8 set means player index in low 8 bits
+    u32 createParams = fopAcM_GetParam(this);
+    int coopPlayerIdx = 0;
+    if (createParams & (1 << 8)) {
+        coopPlayerIdx = createParams & 0xFF;
+    }
+
     static BOOL bgWaitFlg = FALSE;
 
     u32 sceneMode = getLastSceneMode();
@@ -4921,8 +4938,31 @@ int daAlink_c::create() {
             dComIfGs_setSelectEquipClothes(dItemNo_WEAR_KOKIRI_e);
         }
 
-        dComIfGp_setPlayer(0, this);
-        dComIfGp_setLinkPlayer(this);
+        dComIfGp_setPlayer(coopPlayerIdx, this);
+        if (coopPlayerIdx == 0) {
+            dComIfGp_setLinkPlayer(this);
+        } else {
+            // Co-op players: set initial HP/stats from main player
+            daAlink_c* mainPlayer = (daAlink_c*)dComIfGp_getPlayer(0);
+            if (mainPlayer) {
+                mHealth = mainPlayer->mHealth;
+                mMaxHealth = mainPlayer->mMaxHealth;
+                mMagic = mainPlayer->mMagic;
+            }
+            // Apply per-player tunic color
+            if (coopPlayerIdx < 4) {
+                static const J3DGXColorS10 s_tunicColors[4] = {
+                    {  0,   0,   0, 0},  // 0: default (green from model)
+                    {200, -80, -80, 0},  // 1: red shift
+                    {-80, -80, 200, 0},  // 2: blue shift
+                    {150, 150, -80, 0},  // 3: yellow shift
+                };
+                int colorIdx = dusk::getSettings().backend.tunicColor[coopPlayerIdx].getValue();
+                if (colorIdx < 0) colorIdx = 0;
+                if (colorIdx > 3) colorIdx = 3;
+                field_0x32a0[0] = s_tunicColors[colorIdx];
+            }
+        }
         fopAcM_setStageLayer(&LEAFDRAW_BASE(this));
 
         if (sceneMode == 7) {
@@ -4988,8 +5028,8 @@ int daAlink_c::create() {
             return cPhs_ERROR_e;
         }
 
-        mAttention = dComIfGp_getAttention();
-        field_0x317c = dComIfGp_getPlayerCameraID(0);
+        mAttention = dComIfGp_getAttention(coopPlayerIdx);
+        field_0x317c = dComIfGp_getPlayerCameraID(coopPlayerIdx);
 
         playerInit();
         bgWaitFlg = TRUE;
@@ -9326,9 +9366,9 @@ void daAlink_c::setPlayerPosAndAngle(Mtx i_mtx) {
 #if DEBUG
 BOOL daAlink_c::checkDebugMoveInput() {
     if (mDoCPd_c::isConnect(PAD_3)) {
-        return mDoCPd_c::getHoldB(PAD_1)
-                && mDoCPd_c::getAnalogR(PAD_1) > 0.8f
-                && mDoCPd_c::getTrigA(PAD_1);
+        return mDoCPd_c::getHoldB(getPlayerPad(this))
+                && mDoCPd_c::getAnalogR(getPlayerPad(this)) > 0.8f
+                && mDoCPd_c::getTrigA(getPlayerPad(this));
     }
 
     return FALSE;
@@ -9451,8 +9491,8 @@ void daAlink_c::setStickData() {
             mStickValue = JMAFastSqrt(SQUARE(mg_rod->getRodStickX()) + SQUARE(mg_rod->getRodStickY()));
             mStickAngle = cM_atan2s(-mg_rod->getRodStickX(), mg_rod->getRodStickY());
         } else {
-            mStickValue = mDoCPd_c::getStickValue(PAD_1);
-            mStickAngle = mDoCPd_c::getStickAngle3D(PAD_1) - -0x8000;
+            mStickValue = mDoCPd_c::getStickValue(getPlayerPad(this));
+            mStickAngle = mDoCPd_c::getStickAngle3D(getPlayerPad(this)) - -0x8000;
         }
 
         mMoveValue = mStickValue;
@@ -9478,47 +9518,47 @@ void daAlink_c::setStickData() {
             field_0x2fb9 = 1;
         }
 
-        if (mDoCPd_c::getTrigB(PAD_1)) {
+        if (mDoCPd_c::getTrigB(getPlayerPad(this))) {
             mItemTrigger |= (daAlink_ITEM_BTN)BTN_B;
         }
-        if (mDoCPd_c::getTrigA(PAD_1)) {
+        if (mDoCPd_c::getTrigA(getPlayerPad(this))) {
             mItemTrigger |= (daAlink_ITEM_BTN)BTN_A;
         }
-        if (mDoCPd_c::getTrigX(PAD_1)) {
+        if (mDoCPd_c::getTrigX(getPlayerPad(this))) {
             mItemTrigger |= (daAlink_ITEM_BTN)BTN_X;
         }
-        if (mDoCPd_c::getTrigY(PAD_1)) {
+        if (mDoCPd_c::getTrigY(getPlayerPad(this))) {
             mItemTrigger |= (daAlink_ITEM_BTN)BTN_Y;
         }
-        if (mDoCPd_c::getTrigZ(PAD_1)) {
+        if (mDoCPd_c::getTrigZ(getPlayerPad(this))) {
             mItemTrigger |= (daAlink_ITEM_BTN)BTN_Z;
         }
-        if (mDoCPd_c::getTrigL(PAD_1)) {
+        if (mDoCPd_c::getTrigL(getPlayerPad(this))) {
             mItemTrigger |= (daAlink_ITEM_BTN)BTN_L;
         }
-        if (mDoCPd_c::getTrigLockR(PAD_1)) {
+        if (mDoCPd_c::getTrigLockR(getPlayerPad(this))) {
             mItemTrigger |= (daAlink_ITEM_BTN)BTN_R;
         }
 
-        if (mDoCPd_c::getHoldA(PAD_1)) {
+        if (mDoCPd_c::getHoldA(getPlayerPad(this))) {
             mItemButton |= (daAlink_ITEM_BTN)BTN_A;
         }
-        if (mDoCPd_c::getHoldB(PAD_1)) {
+        if (mDoCPd_c::getHoldB(getPlayerPad(this))) {
             mItemButton |= (daAlink_ITEM_BTN)BTN_B;
         }
-        if (mDoCPd_c::getHoldX(PAD_1)) {
+        if (mDoCPd_c::getHoldX(getPlayerPad(this))) {
             mItemButton |= (daAlink_ITEM_BTN)BTN_X;
         }
-        if (mDoCPd_c::getHoldY(PAD_1)) {
+        if (mDoCPd_c::getHoldY(getPlayerPad(this))) {
             mItemButton |= (daAlink_ITEM_BTN)BTN_Y;
         }
-        if (mDoCPd_c::getHoldZ(PAD_1)) {
+        if (mDoCPd_c::getHoldZ(getPlayerPad(this))) {
             mItemButton |= (daAlink_ITEM_BTN)BTN_Z;
         }
-        if (mDoCPd_c::getHoldL(PAD_1)) {
+        if (mDoCPd_c::getHoldL(getPlayerPad(this))) {
             mItemButton |= (daAlink_ITEM_BTN)BTN_L;
         }
-        if (mDoCPd_c::getHoldLockR(PAD_1)) {
+        if (mDoCPd_c::getHoldLockR(getPlayerPad(this))) {
             mItemButton |= (daAlink_ITEM_BTN)BTN_R;
         }
 
@@ -11525,7 +11565,7 @@ int daAlink_c::orderZTalk() {
 
         if (midnaTalkTrigger()
 #if DEBUG
-            && (!mDoCPd_c::getHoldL(PAD_1) || !mDoCPd_c::getHoldR(PAD_1))
+            && (!mDoCPd_c::getHoldL(getPlayerPad(this)) || !mDoCPd_c::getHoldR(getPlayerPad(this)))
 #endif
            )
         {
@@ -18158,9 +18198,9 @@ int daAlink_c::execute() {
         } else {
             f32 moveSpeed;
 #if TARGET_PC
-            if (mDoCPd_c::getHoldZ(PAD_1)) {
+            if (mDoCPd_c::getHoldZ(getPlayerPad(this))) {
 #else
-            if (mDoCPd_c::getHoldLockR(PAD_1)) {
+            if (mDoCPd_c::getHoldLockR(getPlayerPad(this))) {
 #endif
                 moveSpeed = 100.0f;
             } else {
@@ -18168,14 +18208,14 @@ int daAlink_c::execute() {
             }
 
 #if TARGET_PC
-            f32 cStickY = mDoCPd_c::getSubStickY(PAD_1);
+            f32 cStickY = mDoCPd_c::getSubStickY(getPlayerPad(this));
             if (cStickY > 0.3f || cStickY < -0.3f) {
                 current.pos.y += moveSpeed * cStickY;
             }
 #else
-            if (mDoCPd_c::getHoldY(PAD_1)) {
+            if (mDoCPd_c::getHoldY(getPlayerPad(this))) {
                 current.pos.y += moveSpeed;
-            } else if (mDoCPd_c::getHoldX(PAD_1)) {
+            } else if (mDoCPd_c::getHoldX(getPlayerPad(this))) {
                 current.pos.y -= moveSpeed;
             }
 #endif
@@ -19871,8 +19911,12 @@ daAlink_c::~daAlink_c() {
 
     dKy_plight_cut(&mMagneBootsPlight);
 
-    dComIfGp_setPlayer(0, NULL);
-    dComIfGp_setLinkPlayer(NULL);
+    u32 delParams = fopAcM_GetParam(this);
+    int delPlayerIdx = (delParams & (1 << 8)) ? (delParams & 0xFF) : 0;
+    dComIfGp_setPlayer(delPlayerIdx, NULL);
+    if (delPlayerIdx == 0) {
+        dComIfGp_setLinkPlayer(NULL);
+    }
 }
 
 static int daAlink_Delete(daAlink_c* i_this) {

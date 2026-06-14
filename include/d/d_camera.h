@@ -13,6 +13,7 @@
 #include "m_Do/m_Do_graphic.h"
 
 dAttention_c* dComIfGp_getAttention();
+dAttention_c* dComIfGp_getAttention(int idx);
 
 struct dCamMapToolData {
     dCamMapToolData() { Clr(); }
@@ -1119,7 +1120,7 @@ public:
     }
 
     void Att() {
-        dAttention_c* attn = dComIfGp_getAttention();
+        dAttention_c* attn = dComIfGp_getAttention(mCameraID);
         mpLockonTarget = attn->LockonTruth() ? attn->LockonTarget(0) : NULL;
         attn->LockSoundOn();
     }

@@ -170,6 +170,12 @@ UserSettings g_userSettings = {
         .enabled {"backend.enabled", false},
         .autoLaunchServer {"backend.autoLaunchServer", false},
         .serverJarPath {"backend.serverJarPath", "TPOnline_extracted/server.jar"},
+        .tunicColor {
+            ConfigVar<int>{"backend.tunicColor_port0", 0},
+            ConfigVar<int>{"backend.tunicColor_port1", 1},
+            ConfigVar<int>{"backend.tunicColor_port2", 2},
+            ConfigVar<int>{"backend.tunicColor_port3", 3},
+        },
     },
 
     // Not sure if there's a better way to declare this
@@ -346,6 +352,10 @@ void registerSettings() {
     Register(g_userSettings.backend.enabled);
     Register(g_userSettings.backend.autoLaunchServer);
     Register(g_userSettings.backend.serverJarPath);
+    Register(g_userSettings.backend.tunicColor[0]);
+    Register(g_userSettings.backend.tunicColor[1]);
+    Register(g_userSettings.backend.tunicColor[2]);
+    Register(g_userSettings.backend.tunicColor[3]);
 
     Register(g_userSettings.actionBindings.firstPersonCamera[0]);
     Register(g_userSettings.actionBindings.firstPersonCamera[1]);

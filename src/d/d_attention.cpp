@@ -12,6 +12,43 @@
 #include "SSystem/SComponent/c_counter.h"
 #include <cstring>
 
+// Per-player cursor tint colors (GXColor format)
+// Indexed by PAD number (0-3)
+static const J3DGXColor s_cursorTintColors[4] = {
+    {255, 255, 255, 255},  // Player 0: white (default)
+    {255,  80,  80, 255},  // Player 1: red
+    { 80, 160, 255, 255},  // Player 2: blue
+    {255, 255,  80, 255},  // Player 3: yellow
+};
+
+// Apply cursor tint color to a dAttDraw_c's models
+static void applyCursorTint(dAttDraw_c& d, const J3DGXColor& tint) {
+    for (int type = 0; type < 2; type++) {
+        J3DModel* model = d.mModel[type];
+        if (!model) continue;
+        J3DModelData* md = model->getModelData();
+        if (!md) continue;
+        for (int m = 0; m < md->getMaterialNum(); m++) {
+            J3DMaterial* mat = md->getMaterialNodePointer(m);
+            J3DGXColor tc;
+            tc.r = tint.r; tc.g = tint.g; tc.b = tint.b; tc.a = 255;
+            mat->setTevColor(0, &tc);
+            J3DGXColor* kc = (J3DGXColor*)mat->getTevKColor(0);
+            kc->r = tint.r; kc->g = tint.g; kc->b = tint.b;
+            mat->setTevKColor(0, kc);
+        }
+    }
+}
+
+// Per-player tunic color offsets (J3DGXColorS10 format)
+// Added to the base model color via TevColor(1)
+static const J3DGXColorS10 s_tunicColors[4] = {
+    {  0,   0,   0, 0},  // Player 0: default (green from model)
+    {200, -80, -80, 0},  // Player 1: red shift
+    {-80, -80, 200, 0},  // Player 2: blue shift
+    {150, 150, -80, 0},  // Player 3: yellow shift
+};
+
 #if TARGET_PC
 #include "dusk/settings.h"
 #endif
@@ -1426,6 +1463,13 @@ int dAttention_c::Run() {
 }
 
 void dAttention_c::Draw() {
+    // Apply per-player cursor tint
+    int tintIdx = mPadNo;
+    if (tintIdx < 0) tintIdx = 0;
+    if (tintIdx > 3) tintIdx = 3;
+    const J3DGXColor& tint = s_cursorTintColors[tintIdx];
+    applyCursorTint(draw[0], tint);
+    applyCursorTint(draw[1], tint);
 #if TARGET_PC
 if (dusk::getSettings().game.recordingMode) {
     return;

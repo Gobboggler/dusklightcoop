@@ -477,7 +477,8 @@ public:
     dStage_roomControl_c* getRoomControl() { return &mRoomControl; }
     dEvt_control_c* getEvent() { return &mEvent; }
     dEvent_manager_c& getEvtManager() { return mEvtManager; }
-    dAttention_c* getAttention() { return &mAttention; }
+    dAttention_c* getAttention() { return &mAttention[0]; }
+    dAttention_c* getAttention(int idx) { return &mAttention[idx]; }
     dVibration_c& getVibration() { return mVibration; }
 
     JKRAramArchive* getFieldMapArchive2() { return (JKRAramArchive*)mFieldMapArchive2; }
@@ -894,7 +895,7 @@ public:
     /* 0x03F8C */ dStage_roomControl_c mRoomControl;
     /* 0x03F90 */ dEvt_control_c mEvent;
     /* 0x040C0 */ dEvent_manager_c mEvtManager;
-    /* 0x04780 */ dAttention_c mAttention;
+    /* 0x04780 */ dAttention_c mAttention[4];
     #if PLATFORM_WII || VERSION == VERSION_SHIELD
     /* 0x04C9C */ u8 unk_0x4c9c[8];
     #endif
@@ -931,16 +932,16 @@ public:
     /* 0x04E0C */ u8 mWindowNum;
     /* 0x04E0D */ s8 mLayerOld;
     /* 0x04E0E */ u16 mStatus;
-    /* 0x04E10 */ dDlst_window_c mWindow[1];
-    /* 0x04E3C */ dComIfG_camera_info_class mCameraInfo[1];
-    /* 0x04E74 */ struct {
-        /* 0x0 */ fopAc_ac_c* mpPlayer;
-        /* 0x4 */ s8 mCameraID;
-    } mPlayerInfo[1];
-    /* 0x04E7C */ fopAc_ac_c* mPlayerPtr[2];  // 0: Player, 1: Horse ; type may be wrong
-    /* 0x04E84 */ dComIfG_item_info_class mItemInfo;
-    /* 0x04FB0 */ dComIfG_MesgCamInfo_c mMesgCamInfo;
-    /* 0x04FE0 */ u32 mPlayerStatus[1][4];
+    /* 0x04E10 */ dDlst_window_c mWindow[4];
+    dComIfG_camera_info_class mCameraInfo[4];
+    struct {
+        fopAc_ac_c* mpPlayer;
+        s8 mCameraID;
+    } mPlayerInfo[4];
+    fopAc_ac_c* mPlayerPtr[2];  // 0: Player, 1: Horse ; type may be wrong
+    dComIfG_item_info_class mItemInfo;
+    dComIfG_MesgCamInfo_c mMesgCamInfo;
+    u32 mPlayerStatus[4][4];
     /* 0x04FF0 */ u8 field_0x4ff0[0x8];
     /* 0x04FF8 */ __d_timer_info_c mTimerInfo;
     /* 0x0500C */ dDlst_window_c* mCurrentWindow;
@@ -2876,6 +2877,9 @@ inline int dComIfGp_evmng_checkStartDemo() {
 
 inline dAttention_c* dComIfGp_getAttention() {
     return g_dComIfG_gameInfo.play.getAttention();
+}
+inline dAttention_c* dComIfGp_getAttention(int idx) {
+    return g_dComIfG_gameInfo.play.getAttention(idx);
 }
 
 inline fopAc_ac_c* dComIfGp_att_getZHint() {
